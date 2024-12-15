@@ -1,0 +1,8 @@
+{
+    "heuristics":[
+        {
+            "name":"random",
+            "description":"This is a heuristic that randomly selects parameters"
+        }
+    ]
+}
