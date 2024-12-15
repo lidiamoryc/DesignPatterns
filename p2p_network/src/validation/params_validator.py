@@ -15,6 +15,26 @@ class WrongModelTypeError(ValueError):
 class ParamsValidator:
     """
     A class that validates the parameters for the node.
+
+    Args:
+        possible_models_and_params (dict): The possible models and their parameters.
+        Example structure of the possible_models_and_params:
+        {
+            "model1": [{"name": "param1", "type": "int", "value": 5},
+                       {"name": "param2", "type": "float", "value": {
+                           "min": 0.1,
+                           "max": 0.5}},
+                       {"name": "param3", "type": "string", "value": "value"}],
+            "model2": [{"name": "param1", "type": "int", "value": {
+                           "min": 1,
+                           "max": 10}},
+                       {"name": "param2", "type": "float", "value": 0.3},
+                       {"name": "param3", "type": "string", "value": "value"}]
+        }
+
+    Methods:
+        validate_model_type: validates the given model type
+        validate_params: validates the given parameters
     """
     def __init__(self, possible_models_and_params: dict):
         self.possible_models_and_params: dict = possible_models_and_params

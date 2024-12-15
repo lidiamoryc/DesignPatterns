@@ -22,6 +22,10 @@ class UserInterfaceImplementation():
             [{"name": "param1", type="int" "value": 5},
             {"name": "param2", type="float", "value": 0.3},
             {"name": "param3", type="string", "value": "value"}]
+
+        Methods:
+            start_training: starts the node
+            stop_training: stops the node
         """
         self.node: NodeInterface = Node(model_type, initial_params)
         self.is_stopped = False
