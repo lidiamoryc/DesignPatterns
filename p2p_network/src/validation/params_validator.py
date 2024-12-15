@@ -1,10 +1,10 @@
-class WrongParamError(Exception):
+class WrongParamError(ValueError):
     """Raised when some parameter are not valid."""
 
     def __init__(self, param_name: str, param_value: str):
         super().__init__(f"Parameter {param_name} with value {param_value} is not valid.")
 
-class WrongModelTypeError(Exception):
+class WrongModelTypeError(ValueError):
     """Raised when the model type is not valid."""
 
     def __init__(self, model_type: str):
@@ -55,7 +55,7 @@ class ParamsValidator:
         return True
 
 
-    def _validate_param_name(self, name: str, value, possible_params: list[dict]):
+    def _validate_param_name(self, name: str, value, possible_params: list[dict]) -> None:
         """
         Validates if the parameter name exists in the possible parameters.
         """
@@ -73,7 +73,7 @@ class ParamsValidator:
         raise ValueError(f"Parameter conditions not found for {name}")
 
 
-    def _validate_param_type(self, name: str, value, expected_type: str):
+    def _validate_param_type(self, name: str, value, expected_type: str) -> None:
         """
         Validates the type of the parameter value.
         """
@@ -90,7 +90,7 @@ class ParamsValidator:
             raise ValueError(f"Unsupported parameter type: {expected_type}")
 
 
-    def _validate_param_values(self, name: str, value, values):
+    def _validate_param_values(self, name: str, value, values) -> None:
         """
         Validates the parameter value against a predefined set of possible values or a range.
         """
