@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class CombinationSearcherInteface(ABC):
+class CombinationSearcherInterface(ABC):
     """An interface for heuristics used to calculate for the best combination of parameters.
 
     Methods:
