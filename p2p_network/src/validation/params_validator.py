@@ -18,7 +18,7 @@ class ParamsValidator:
 
     Args:
         possible_models_and_params (dict): The possible models and their parameters.
-        Example structure of the possible_models_and_params:
+        Example structure of the _possible_models_and_params:
         {
             "model1": [{"name": "param1", "type": "int", "value": 5},
                        {"name": "param2", "type": "float", "value": {
@@ -37,7 +37,7 @@ class ParamsValidator:
         validate_params: validates the given parameters
     """
     def __init__(self, possible_models_and_params: dict):
-        self.possible_models_and_params: dict = possible_models_and_params
+        self._possible_models_and_params: dict = possible_models_and_params
 
     def validate_model_type(self, model_type: str) -> bool:
         """Validates the given model type.
@@ -48,7 +48,7 @@ class ParamsValidator:
         Returns:
             bool: True if the model type is valid
         """
-        if model_type not in self.possible_models_and_params.keys():
+        if model_type not in self._possible_models_and_params.keys():
             raise WrongModelTypeError(model_type)
         return True
 
@@ -66,7 +66,7 @@ class ParamsValidator:
         Returns:
             bool: True if the parameters are valid
         """
-        possible_params = self.possible_models_and_params[model_type]
+        possible_params = self._possible_models_and_params[model_type]
         for param in params:
             self._validate_param_name(param["name"], param["value"], possible_params)
             param_conditions = self._get_param_conditions(param["name"], possible_params)

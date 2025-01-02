@@ -33,7 +33,9 @@ class UserInterfaceImplementation():
         self.initial_params = initial_params
 
     def start_training(self) -> None:
-        """Starts the node.
+        #todo exception handling
+        """
+        Starts the node.
         """
         self.node.run_node()
 
