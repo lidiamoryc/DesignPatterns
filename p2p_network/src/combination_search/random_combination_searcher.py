@@ -1,7 +1,7 @@
 import random
-from p2p_network.src.combination_search.combination_searcher_interface import CombinationSearcherInterface
+from p2p_network.src.combination_search.combination_searcher_interface import BaseStrategy
 
-class RandomCombinationSearcher(CombinationSearcherInterface):
+class RandomCombinationSearcher(BaseStrategy):
     """A class for a random search of the best combination of parameters.
 
     Methods:
