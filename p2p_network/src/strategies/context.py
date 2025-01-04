@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from p2p_network.src.combination_search.combination_searcher_interface import BaseStrategy
+from p2p_network.src.strategies.base_strategy import BaseStrategy
 
 
 class Context:
