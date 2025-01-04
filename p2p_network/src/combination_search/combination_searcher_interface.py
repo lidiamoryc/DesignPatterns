@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-class CombinationSearcherInterface(ABC):
+class BaseStrategy(ABC):
     """An interface for heuristics used to calculate for the best combination of parameters.
 
     Methods:
@@ -12,7 +12,8 @@ class CombinationSearcherInterface(ABC):
     """
 
     @abstractmethod
-    def calculate_new_params(self, top_k_params: list[dict], comb_num: int) -> list[dict]:
+    def get_grid(self, top_k_params: list[dict], gird_items: int) -> list[dict]:
+        # TODO: Update docstring
         """Calculate the new parameters based on the top k parameters and the number of combinations
 
         Args:
@@ -26,4 +27,7 @@ class CombinationSearcherInterface(ABC):
             list[dict]: list of comb_num sets of new parameters
         """
         raise NotImplementedError("calculation method is not implemented")
+
+    @abstractmethod
+    def _get_params_using_heuristic(self) -:
     

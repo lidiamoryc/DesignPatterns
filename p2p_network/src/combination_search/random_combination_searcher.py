@@ -25,6 +25,7 @@ class RandomCombinationSearcher(CombinationSearcherInterface):
         new_params = []
         for _ in range(comb_num):
             new_params.append(self._generate_random_params())
+
         return new_params
 
     def _generate_random_params(self) -> dict:
