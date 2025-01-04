@@ -1,18 +1,12 @@
-# TODO: rename file to base_strategy.py
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from itertools import product
 from typing import Any
 
-from pydantic import BaseModel
 import structlog
 from tqdm import tqdm
 
 from sklearn.ensemble import RandomForestClassifier
-
-# GridSearchItem = dict[str, int | float | str]  # GridSearchItem -> {'lr': 0.01, 'barch_size': 32}
-# #  list[GridSearchItem] -> [{'lr': 0.2, 'barch_size': 64}, {'lr': 0.01, 'barch_size': 32}, ...]
-# GridType = dict[str, list[int | float | str]]
 
 logger = structlog.get_logger()
 
@@ -20,7 +14,7 @@ logger = structlog.get_logger()
 @dataclass
 class UserInput:  # TODO: How map a JSON file from user to python class?
     model_name: str
-    hyperparameters: list[dict[str, list[Any]]]
+    hyperparameters: dict[str, list[Any]]
     num_trials: int
 
 
@@ -51,16 +45,16 @@ class BaseStrategy(ABC):
 
     def get_grid(self, user_input: UserInput) -> Grid:
         """
-        Transform user friendly input into a parameter grid contaning all posible combinations of requested hyperparameters.
+        Transform user friendly input into a parameter grid containing all possible combinations of requested hyperparameters.
         """
+        keys = user_input.hyperparameters.keys()
+        values = user_input.hyperparameters.values()
+        assert len(keys) > 0, f"Number of hyperparameters to choose from must be greater than 0."
+        assert len(values) > 0, f"Number of hyperparameters to choose from must be greater than 0."
 
-        # hyperparameters = user_input.hyperparameters
-        grid = Grid(
-            grid_data=[{'lr': 0.1, "batch_size": 32},
-                       {'lr': 0.1, "batch_size": 64},
-                       {"lr": 0.2, "batch_size": 32},
-                       {'lr': 0.2, "batch_size": 64}],
-        )
+        all_possible_combinations = [dict(zip(keys, combination)) for combination in product(*values)]
+
+        grid = Grid(all_possible_combinations)
 
         return grid
 

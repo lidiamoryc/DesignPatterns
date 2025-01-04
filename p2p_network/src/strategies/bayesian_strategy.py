@@ -1,4 +1,4 @@
-from ..base_strategy import BaseStrategy, UserInput, GridSearchItem, GridType
+from p2p_network.src.strategies.base_strategy import BaseStrategy, UserInput, GridSearchItem, GridType
 
 
 class BayesianGridSearchStrategy(BaseStrategy):

@@ -24,7 +24,7 @@ Grid Search will:
 
 ## **Installation** ⚙️
 
-Make sure you have **Python 3.10** installed. Then, follow these steps:
+Make sure you have **Python `3.10.3`** installed. Then, follow these steps:
 
 1. Clone the repository:
    ```bash
