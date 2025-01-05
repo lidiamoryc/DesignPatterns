@@ -1,40 +1,41 @@
-from p2p_network.src.strategies.base_strategy import BaseStrategy, UserInput, GridSearchItem, GridType
+from p2p_network.src.strategies.base_strategy import BaseStrategy, Grid, UserInput
 
+import random
+from typing import Any
 
-class BayesianGridSearchStrategy(BaseStrategy):
-    """In contrast to GridSearchCV, not all parameter values are tried out, but rather a fixed number of parameter
-     settings is sampled from the specified distributions. The number of parameter settings that
-     are tried is given by n_iter."""
-
-    def __init__(self, n_iter: int, available_hyperparameters: dict):
+class BayesianGridSearch(BaseStrategy):
+    def _get_params_using_heuristic(self, grid: Grid) -> dict[str, Any]:
         """
-        Initialize the BayesianGridSearchStrategy with the number of iterations for sampling.
-
-        Args:
-            n_iter (int): The number of parameter settings to try.
-            available_hyperparameters (dict): Dictionary with hyperparameter names as keys and ranges or choices as values.
+        Implement a simple Bayesian optimization-like approach by scoring hyperparameters
+        based on a mock prior belief and returning the best candidate.
         """
-        self.n_iter = n_iter
-        self.available_hyperparameters = available_hyperparameters
+        if not hasattr(self, "scores"):
+            self.scores = {}
 
-    def get_grid(self, user_input: UserInput) -> list[GridSearchItem]:
-        """Generate grid (sampled parameters) using Bayesian optimization approach."""
-        n_iter = user_input.num_trials
-        grid = []
+        # Assign mock scores to hyperparameters based on a simple heuristic
+        for params in grid.grid_data:
+            if tuple(params.items()) not in self.scores:
+                self.scores[tuple(params.items())] = random.uniform(0, 1)  # Mock scoring
 
-        for _ in range(self.n_iter):
-            grid.append(self._get_params_using_heuristic(self.available_hyperparameters))
+        # Choose the best hyperparameters based on scores
+        best_params = max(grid.grid_data, key=lambda x: self.scores[tuple(x.items())])
 
-        return grid
+        grid.grid_data.remove(best_params)
+        return best_params
 
-    def _get_params_using_heuristic(self, available_hyperparameters: dict) -> GridSearchItem:
-        """Sample parameters based on the available hyperparameters"""
+if __name__ == "__main__":
+    user_input = UserInput(
+        model_name="RandomForest",
+        hyperparameters={
+            "n_estimators": [10, 50, 100],
+            "max_depth": [None, 10, 20],
+            "min_samples_split": [2, 5, 10],
+        },
+        num_trials=5,
+    )
 
-        chosen_parameters: GridSearchItem = {}
-
-        for name, value in available_hyperparameters.items():
-            pass
-
-        return chosen_parameters
+    print("\nRunning Bayesian Grid Search")
+    bayesian_strategy = BayesianGridSearch()
+    print(bayesian_strategy.grid_search(user_input))
 
 

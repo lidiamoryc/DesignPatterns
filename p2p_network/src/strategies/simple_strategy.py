@@ -11,11 +11,19 @@ class SimpleGridSearch(BaseStrategy):
 
 
 if __name__ == '__main__':
-    gs = SimpleGridSearch()
+    simple_strategy = SimpleGridSearch()
+
+    # user_input = UserInput(model_name='NotExistingModelXD',
+    #                        hyperparameters={"batch_size": [x for x in range(100)], "lr": [x / 1000 for x in range(10)]},
+    #                        # TODO: This should be parsed from a JSON file ; P
+    #                        num_trials=5000)
 
     user_input = UserInput(model_name='NotExistingModelXD',
-                           hyperparameters={"batch_size": [x for x in range(100)], "lr": [x / 1000 for x in range(10)]},
-                           # TODO: This should be parsed from a JSON file ; P
-                           num_trials=5000)
+                            hyperparameters = {
+                                "n_estimators": [10, 50, 100],
+                                "max_depth": [None, 10, 20],
+                                "min_samples_split": [2, 5, 10],
+                            },
+                           num_trials=50)
 
-    gs.grid_search(user_input)
+    print(simple_strategy.grid_search(user_input))

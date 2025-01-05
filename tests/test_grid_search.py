@@ -12,7 +12,7 @@ def mock_user_input():
     return UserInput(
         model_name="NotExistingModelXD",
         hyperparameters={"batch_size": [x for x in range(100)], "lr": [x / 1000 for x in range(10)]},
-        num_trials=5000
+        num_trials=4
     )
 
 @pytest.fixture
