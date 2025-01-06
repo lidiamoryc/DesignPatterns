@@ -7,7 +7,7 @@ class WrongUserInputError(Exception):
         super().__init__(message)
 
 
-class UserInterfaceImplementation():
+class UserInterface:
     """
     A class that implements the UserInterfaceInterface. This class is responsible for 
     starting, stopping of the node and giving user the possible models and parameters.
