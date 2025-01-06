@@ -8,6 +8,10 @@ import structlog
 from tqdm import tqdm
 
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -18,6 +22,12 @@ from p2p_network.src.strategies.models import UserInput, Grid, GridSearchOutput
 
 logger = structlog.get_logger()
 
+MODEL_MAP = {
+    "RandomForest": RandomForestClassifier,
+    "SVC": SVC,
+    "LogisticRegression": LogisticRegression,
+    "DecisionTree": DecisionTreeClassifier,
+}
 
 class BaseStrategy(ABC):
     def grid_search(self,
@@ -27,6 +37,11 @@ class BaseStrategy(ABC):
         X_train, X_test, y_train, y_test = train_test_split(
             iris.data, iris.target, test_size=0.2, random_state=42)
 
+        # TODO: how many different models? When to switch them?
+        model_class = MODEL_MAP.get(user_input.model_name)
+        if model_class is None:
+            raise ValueError(f"Unsupported model: {user_input.model_name}")
+
         grid = self.get_grid(user_input)
 
         # TODO: figure out how many results should the function return - is the num_trials correct appriach?
@@ -35,8 +50,9 @@ class BaseStrategy(ABC):
         for _ in tqdm(range(min(user_input.num_trials, len(grid.grid_data))), desc="Running Grid Search"):
             hyperparams = self._get_params_using_heuristic(grid)
 
-            # TODO: how many different models? When to switch them?
-            model = RandomForestClassifier(**hyperparams)
+            # Filter valid hyperparameters
+            # valid_params = {k: v for k, v in hyperparams.items() if k in model().get_params()}
+            model = model_class(**hyperparams)
 
             # Train model
             model.fit(X_train, y_train)
@@ -44,6 +60,7 @@ class BaseStrategy(ABC):
             # Log score for this hyperparameters
             predictions = model.predict(X_test)
 
+            # TODO: one choosen metric or more?
             scores = cross_val_score(model, X_train, y_train, cv=5)
             score = scores.mean()
             # score = accuracy_score(y_test, predictions)
