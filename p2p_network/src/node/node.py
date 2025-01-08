@@ -1,7 +1,14 @@
 import json
-from node_interface import NodeInterface
+import threading
+import time
+from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
+from p2p_network.src.network_node import NetworkNode
+from p2p_network.src.strategies.base_strategy import UserInput
+from p2p_network.src.strategies.random_strategy import RandomGridSearch
+
+
 class WrongUserInputError(Exception):
     """Raised when some user input is not valid."""
     def __init__(self, message: str):
@@ -33,24 +40,33 @@ class Node(NodeInterface):
         {"name": "heuristic2", "description": "description2"}
         ]}}
 
-       model_type (str): type of the model
-            initial_params (dict): initial parameters for the model
-            structure of an example initial params list:
-            [{"name": "param1", type="int" "value": 5},
-            {"name": "param2", type="float", "value": 0.3},
-            {"name": "param3", type="string", "value": "value"}]
+        model_type (str): type of the model
+
+        initial_params (dict): initial parameters for the model
+        structure of an example initial params list:
+        [{"name": "param1", type="int" "value": 5},
+        {"name": "param2", type="float", "value": 0.3},
+        {"name": "param3", type="string", "value": "value"}]
+
+        port (int): port on which the node will run
+        other_peer_port (int or None): port of the other peer node
+
+        params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
-    def __init__(self, model_type: str, initial_params: list[dict]):
+    def __init__(self, model_type: str, initial_params: list[dict], port: int, other_peer_port: int or None = None):
         with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
             self.possible_models_and_params: dict = json.load(f)
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
             self.possible_heuristics: dict = json.load(f)
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
+        self.port: int = port
+        self.other_peer_port: int or None = other_peer_port
         self.params_validator = ParamsValidator(self.possible_models_and_params)
         try:
-            self.params_validator.validate_model_type(model_type)
-            self.params_validator.validate_params(initial_params)
+            #self.params_validator.validate_model_type(model_type)
+            #self.params_validator.validate_params(initial_params)
+            pass
         except WrongModelTypeError as e:
             raise WrongUserInputError(str(e)) from e
         except WrongParamError as e:
@@ -59,7 +75,26 @@ class Node(NodeInterface):
 
 
     def run_node(self):
-        pass
+        network_node = NetworkNode(self.port, self.other_peer_port)
+        threading.Thread(target=network_node.start_server).start()
+
+        user_input = UserInput(
+        model_name="RandomForest",
+        hyperparameters={
+            "n_estimators": [10, 50, 100],
+            "max_depth": [None, 10, 20],
+            "min_samples_split": [2, 5, 10],
+        },
+        num_trials=5,
+    )
+        random_strategy = RandomGridSearch()
+        
+        while(True):
+            hyperparams = random_strategy.grid_search(user_input).grid_search_output
+            params, score = max(hyperparams.items(), key=lambda x: x[1])
+            network_node.send_message(f"Node at port {self.port} found best hyperparameters: {params} with score: {score}")
+            time.sleep(10)
+        
 
     def stop_node(self):
         pass

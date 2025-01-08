@@ -65,7 +65,7 @@ class BaseStrategy(ABC):
             score = scores.mean()
             # score = accuracy_score(y_test, predictions)
 
-            logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
+            #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
 
             hyperparams_string = json.dumps(hyperparams)
             results[hyperparams_string] = score
