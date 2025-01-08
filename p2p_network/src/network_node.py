@@ -4,7 +4,7 @@ import argparse
 import json
 import time
 
-class Node:
+class NetworkNode:
     peers: list[tuple[str, int]]
 
     server_port: int
