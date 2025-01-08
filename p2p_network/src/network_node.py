@@ -26,6 +26,7 @@ class NetworkNode:
     def start_server(self):
         self.server_socket.bind(self._get_hostname(self.server_port))
         self.server_socket.listen()
+        self.connect_to_peer()
 
         print(f"Node listening on port {self.server_port}")
         
@@ -79,6 +80,15 @@ class NetworkNode:
                     print(f"Notified {peer} of this node.")
             except ConnectionRefusedError:
                 print(f"Failed to connect to discovered peer {peer}.")
+    
+    def send_message(self, message):
+        for peer in self.peers:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+                    client_socket.connect(peer)
+                    client_socket.send(json.dumps({"message": message}).encode())
+            except ConnectionRefusedError:
+                print(f"Failed to send message to peer {peer}.")
 
     def stop(self):
         self.running = False
