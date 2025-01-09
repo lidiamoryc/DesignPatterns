@@ -1,10 +1,10 @@
 import json
 import threading
 import time
+from p2p_network.src.managers.message_manager import MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
-from p2p_network.src.network_node import NetworkNode
 from p2p_network.src.strategies.base_strategy import UserInput
 from p2p_network.src.strategies.random_strategy import RandomGridSearch
 
@@ -53,16 +53,17 @@ class Node(NodeInterface):
 
         params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
-    def __init__(self, model_type: str, initial_params: list[dict], port: int, other_peer_port: int or None = None):
+    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int, other_peer_port: int = None):
         with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
             self.possible_models_and_params: dict = json.load(f)
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
             self.possible_heuristics: dict = json.load(f)
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
-        self.port: int = port
-        self.other_peer_port: int or None = other_peer_port
+
         self.params_validator = ParamsValidator(self.possible_models_and_params)
+        self.message_manager = MessageManager(socket_port, other_peer_port)
+
         try:
             #self.params_validator.validate_model_type(model_type)
             #self.params_validator.validate_params(initial_params)
@@ -72,11 +73,8 @@ class Node(NodeInterface):
         except WrongParamError as e:
             raise WrongUserInputError(str(e)) from e
 
-
-
     def run_node(self):
-        network_node = NetworkNode(self.port, self.other_peer_port)
-        threading.Thread(target=network_node.start_server).start()
+        threading.Thread(target=self.message_manager.initialize).start()
 
         user_input = UserInput(
         model_name="RandomForest",
@@ -92,7 +90,7 @@ class Node(NodeInterface):
         while(True):
             hyperparams = random_strategy.grid_search(user_input).grid_search_output
             params, score = max(hyperparams.items(), key=lambda x: x[1])
-            network_node.send_message(f"Node at port {self.port} found best hyperparameters: {params} with score: {score}")
+            self.message_manager.publish_message(f"Node found best hyperparameters: {params} with score: {score}")
             time.sleep(10)
         
 
