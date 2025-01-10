@@ -32,6 +32,20 @@ class MessageManager:
             client, _ = self.messaging_socket.accept()
             threading.Thread(target=self.handle_client, args=(client,)).start()
 
+    def cleanup_and_exit(self):
+        for peer in self.peers:
+            removed_peer = (LOCALHOST, self.socket_port)
+
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+                    client_socket.connect(peer)
+                    client_socket.send(json.dumps({"peer_removal": removed_peer}).encode())
+            except ConnectionRefusedError:
+                print(f"Failed to notify peer {peer} about the removal of {removed_peer}.")
+        
+        self.messaging_socket.close()
+        self.is_running = False
+
     def handle_client(self, connection: socket.socket):
         with connection:
             data = connection.recv(1024)
@@ -44,9 +58,14 @@ class MessageManager:
                     connection.send(json.dumps({"peers": self.peers}).encode())
                 elif "new_peer" in message:
                     new_peer = tuple(message["new_peer"])
-                    
                     if new_peer not in self.peers and new_peer != (LOCALHOST, self.socket_port):
                         self.peers.append(new_peer)
+                elif "peer_removal" in message:
+                        removed_peer = tuple(message["peer_removal"])
+                        print(removed_peer)
+                        if removed_peer in self.peers:
+                            self.peers.remove(removed_peer)
+                            print(f"Peer {removed_peer} has been removed.")
 
     def connect_to_other_peer(self):
         if self.other_peer_port:
