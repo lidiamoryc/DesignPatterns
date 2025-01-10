@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class UserInput:  # TODO: How map a JSON file from user to python class?
     model_name: str
     hyperparameters: dict[str, list[Any]]
-    num_trials: int
+    # num_trials: int
 
 
 @dataclass

@@ -44,6 +44,6 @@ class Context:
         # ...
 
         print("Context: Sorting data using the strategy (not sure how it'll do it)")
-        result = self._strategy.grid_search(params)
+        # result = self._strategy.grid_search(params)
 
         # ...
