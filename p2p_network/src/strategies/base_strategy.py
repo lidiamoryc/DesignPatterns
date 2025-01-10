@@ -31,7 +31,7 @@ MODEL_MAP = {
 
 class BaseStrategy(ABC):
     def grid_search(self,
-                    user_input: UserInput) -> GridSearchOutput:  # TODO: What is the prefered output? Score? Best model weights?
+                    user_input: UserInput) -> tuple[str, Any]:  # TODO: What is the prefered output? Score? Best model weights?
 
         iris = load_iris() # TODO: which dataset?
         X_train, X_test, y_train, y_test = train_test_split(
@@ -44,35 +44,29 @@ class BaseStrategy(ABC):
 
         grid = self.get_grid(user_input)
 
-        # TODO: figure out how many results should the function return - is the num_trials correct appriach?
-        results = {}
+        hyperparams = self._get_params_using_heuristic(grid)
 
-        for _ in tqdm(range(min(user_input.num_trials, len(grid.grid_data))), desc="Running Grid Search"):
-            hyperparams = self._get_params_using_heuristic(grid)
+        # Filter valid hyperparameters
+        # valid_params = {k: v for k, v in hyperparams.items() if k in model().get_params()}
+        model = model_class(**hyperparams)
 
-            # Filter valid hyperparameters
-            # valid_params = {k: v for k, v in hyperparams.items() if k in model().get_params()}
-            model = model_class(**hyperparams)
+        # Train model
+        model.fit(X_train, y_train)
 
-            # Train model
-            model.fit(X_train, y_train)
+        # Log score for this hyperparameters
+        predictions = model.predict(X_test)
 
-            # Log score for this hyperparameters
-            predictions = model.predict(X_test)
+        # TODO: one choosen metric or more?
+        scores = cross_val_score(model, X_train, y_train, cv=5)
+        score = scores.mean()
+        # score = accuracy_score(y_test, predictions)
 
-            # TODO: one choosen metric or more?
-            scores = cross_val_score(model, X_train, y_train, cv=5)
-            score = scores.mean()
-            # score = accuracy_score(y_test, predictions)
+        #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
 
-            #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
+        hyperparams_string = json.dumps(hyperparams)
+        results[hyperparams_string] = score
 
-            hyperparams_string = json.dumps(hyperparams)
-            results[hyperparams_string] = score
-
-        hyperparams_with_metrics = GridSearchOutput(results)
-
-        return hyperparams_with_metrics
+        return hyperparams_string, score
 
     def get_grid(self, user_input: UserInput) -> Grid:
         """
