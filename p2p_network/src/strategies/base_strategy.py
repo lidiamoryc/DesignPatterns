@@ -61,12 +61,11 @@ class BaseStrategy(ABC):
         score = scores.mean()
         # score = accuracy_score(y_test, predictions)
 
-        logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
+        #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
 
         hyperparams_string = json.dumps(hyperparams)
 
         return hyperparams_string, score
-
 
     def get_grid(self, user_input: UserInput) -> Grid:
         """
