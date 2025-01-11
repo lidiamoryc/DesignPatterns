@@ -1,0 +1,10 @@
+{
+    "model_type": "RandomForest",
+    "combinations": [
+        "{\"n_estimators\": 10, \"max_depth\": 89, \"min_samples_split\": 6, \"score\": 0.9416666666666667}",
+        "{\"n_estimators\": 41, \"max_depth\": 61, \"min_samples_split\": 6, \"score\": 0.9416666666666667}",
+        "{\"n_estimators\": 39, \"max_depth\": 34, \"min_samples_split\": 3, \"score\": 0.9416666666666667}",
+        "{\"n_estimators\": 27, \"max_depth\": 98, \"min_samples_split\": 7, \"score\": 0.95}",
+        "{\"n_estimators\": 71, \"max_depth\": 32, \"min_samples_split\": 7, \"score\": 0.95}"
+    ]
+}

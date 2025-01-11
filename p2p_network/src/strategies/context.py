@@ -40,5 +40,4 @@ class Context:
         The Context delegates some work to the Strategy object instead of
         implementing multiple versions of the algorithm on its own.
         """
-
         return self._strategy.grid_search(params)

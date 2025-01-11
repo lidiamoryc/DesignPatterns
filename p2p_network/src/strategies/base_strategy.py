@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Any
 import json
+import numpy as np
 
 import structlog
 from tqdm import tqdm
@@ -60,12 +61,16 @@ class BaseStrategy(ABC):
         scores = cross_val_score(model, X_train, y_train, cv=5)
         score = scores.mean()
         # score = accuracy_score(y_test, predictions)
-
+        for keys in hyperparams.keys():
+            if isinstance(hyperparams[keys], np.int64):
+                hyperparams[keys] = int(hyperparams[keys])
+            elif isinstance(hyperparams[keys], np.float64):
+                hyperparams[keys] = float(hyperparams[keys])
+        hyperparams["score"] = score
         #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
-
         hyperparams_string = json.dumps(hyperparams)
 
-        return hyperparams_string, score
+        return hyperparams_string
 
     def get_grid(self, user_input: UserInput) -> Grid:
         """
