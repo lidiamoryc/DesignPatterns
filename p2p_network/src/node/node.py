@@ -2,8 +2,7 @@ import json
 import threading
 from p2p_network.src.commands.exit_network import ExitNetworkCommand
 from p2p_network.src.commands.notify_about_results import NotifyAboutResultsCommand
-from p2p_network.src.commands.notify_discovered_peers import NotifyDiscoveredPeersCommand
-from p2p_network.src.commands.request_peers import RequestPeersCommand
+from p2p_network.src.commands.join_network import JoinNetworkCommand
 from p2p_network.src.managers.message_manager import LOCALHOST, MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
@@ -94,11 +93,8 @@ class Node(NodeInterface):
             other_peer = (LOCALHOST, self.other_peer_port)
             
             try:
-                self.command = RequestPeersCommand(self.message_manager)
+                self.command = JoinNetworkCommand(self.message_manager)
                 self.command.execute(other_peer)
-
-                self.command = NotifyDiscoveredPeersCommand(self.message_manager)
-                self.command.execute()
             except ConnectionRefusedError:
                 print(f"Unable to join network")
 
@@ -121,7 +117,7 @@ class Node(NodeInterface):
             params, score = max(hyperparams.items(), key=lambda x: x[1])
             
             self.command = NotifyAboutResultsCommand(self.message_manager)
-            self.command.execute(params, score)
+            self.command.execute({params, score})
 
     def stop_node(self):
         self.is_running = False
