@@ -7,8 +7,8 @@ class NotifyAboutResultsCommand(Command):
     def __init__(self, message_manager: MessageManager):
         self.message_manager = message_manager
 
-    def execute(self, results: dict[str, any]):
-        payload = {"results": f"{results}"}
+    def execute(self, **kwargs):
+        payload = {"results": f"{kwargs.get('results', {})}"}
         encoded_payload = json.dumps(payload).encode()
         self.message_manager.notify_peers(encoded_payload)
                     

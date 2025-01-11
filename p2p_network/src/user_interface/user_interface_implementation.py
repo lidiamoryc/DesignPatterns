@@ -1,3 +1,8 @@
+import threading
+from p2p_network.src.commands.exit_network import ExitNetworkCommand
+from p2p_network.src.commands.join_network import JoinNetworkCommand
+from p2p_network.src.commands.notify_about_results import NotifyAboutResultsCommand
+from p2p_network.src.managers.message_manager import MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.node.node import Node
 
@@ -12,7 +17,7 @@ class UserInterface:
     A class that implements the UserInterfaceInterface. This class is responsible for 
     starting, stopping of the node and giving user the possible models and parameters.
     """
-    def __init__(self, model_type: str, initial_params: list[dict], port: int = 5001, other_peer_port: int or None = None):
+    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int = 5001, other_peer_port: int = None):
         """Initializes the UserInterfaceImplementation.
 
         Attributes:
@@ -28,18 +33,36 @@ class UserInterface:
             start_training: starts the node
             stop_training: stops the node
         """
-        self.node: NodeInterface = Node(model_type, initial_params, port, other_peer_port)
+        self.node: NodeInterface = Node(model_type, initial_params)
         self.is_stopped = False
         self.model_type = model_type
         self.initial_params = initial_params
+        self.message_manager = MessageManager(socket_port, other_peer_port)
+
+        join_network_command = JoinNetworkCommand(self.message_manager) if other_peer_port is not None else None
+        
+        if join_network_command:
+            self.node.set_command(join_network_command)
 
     def start_training(self) -> None:
         """
         Starts the node.
         """
-        self.node.run_node()
+        self.messaging_thread = threading.Thread(target=self.message_manager.initialize)
+        self.messaging_thread.start()
 
+        self.computation_thread = threading.Thread(target=self.node.run_node)
+        self.computation_thread.start()
+
+        notify_about_results_command = NotifyAboutResultsCommand(self.message_manager)
+        self.node.set_command(notify_about_results_command)
+        
     def stop_training(self) -> None:
         """Stops the node.
         """
+        exit_network_command = ExitNetworkCommand(self.message_manager)
+        self.node.set_command(exit_network_command)
         self.node.stop_node()
+
+        self.messaging_thread.join()
+        self.computation_thread.join()
