@@ -10,11 +10,12 @@ class MessageManager:
     messaging_socket: socket.socket
     is_running: bool
 
-    def __init__(self, socket_port: int):
+    def __init__(self, socket_port: int, other_peer_port: int = None):
         self.peers = []
 
         self.socket_port = socket_port
         self.messaging_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.other_peer_port = other_peer_port
 
         self.is_running = False
 
@@ -59,9 +60,11 @@ class MessageManager:
     def get_current_node(self) -> tuple[str, int]:
         return (LOCALHOST, self.socket_port)
     
-    def join_network(self, other_peer: tuple[str, int]) -> None:
+    def join_network(self) -> None:
         payload = {"request": "peers"}
         encoded_payload = json.dumps(payload).encode()
+
+        other_peer = (LOCALHOST, self.other_peer_port)
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect(other_peer)

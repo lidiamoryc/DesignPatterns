@@ -6,5 +6,5 @@ class JoinNetworkCommand(Command):
     def __init__(self, message_manager: MessageManager):
         self.message_manager = message_manager
 
-    def execute(self, other_peer: tuple[str, int]):
-        self.message_manager.join_network(other_peer)
+    def execute(self, **kwargs):
+        self.message_manager.join_network()

@@ -7,5 +7,5 @@ class ExitNetworkCommand(Command):
     def __init__(self, message_manager: MessageManager):
         self.message_manager = message_manager
 
-    def execute(self):
+    def execute(self, **kwargs):
         self.message_manager.exit_network()

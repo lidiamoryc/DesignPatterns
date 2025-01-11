@@ -1,9 +1,5 @@
 import json
-import threading
-from p2p_network.src.commands.exit_network import ExitNetworkCommand
-from p2p_network.src.commands.notify_about_results import NotifyAboutResultsCommand
-from p2p_network.src.commands.join_network import JoinNetworkCommand
-from p2p_network.src.managers.message_manager import LOCALHOST, MessageManager
+from p2p_network.src.commands.command import Command
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
@@ -55,7 +51,7 @@ class Node(NodeInterface):
 
         params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
-    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int, other_peer_port: int = None):
+    def __init__(self, model_type: str, initial_params: list[dict]):
         with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
             self.possible_models_and_params: dict = json.load(f)
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
@@ -65,10 +61,8 @@ class Node(NodeInterface):
         self.initial_params: dict = initial_params
 
         self.params_validator = ParamsValidator(self.possible_models_and_params)
-        self.message_manager = MessageManager(socket_port)
-        self.other_peer_port = other_peer_port
-
         self.is_running = False
+        self.command = None
 
         try:
             #self.params_validator.validate_model_type(model_type)
@@ -78,27 +72,17 @@ class Node(NodeInterface):
             raise WrongUserInputError(str(e)) from e
         except WrongParamError as e:
             raise WrongUserInputError(str(e)) from e
+        
+    def set_command(self, command: Command):
+        self.command = command
 
     def run_node(self):
         self.is_running = True
 
-        self.messaging_thread = threading.Thread(target=self.join_network)
-        self.messaging_thread.start()
+        if self.command:
+            self.command.execute()
 
-        self.computation_thread = threading.Thread(target=self.run_computation)
-        self.computation_thread.start()
-
-    def join_network(self):
-        if self.other_peer_port:
-            other_peer = (LOCALHOST, self.other_peer_port)
-            
-            try:
-                self.command = JoinNetworkCommand(self.message_manager)
-                self.command.execute(other_peer)
-            except ConnectionRefusedError:
-                print(f"Unable to join network")
-
-        self.message_manager.initialize()
+        self.run_computation()
     
     def run_computation(self):
         user_input = UserInput(
@@ -115,19 +99,12 @@ class Node(NodeInterface):
         while self.is_running:
             hyperparams = random_strategy.grid_search(user_input).grid_search_output
             params, score = max(hyperparams.items(), key=lambda x: x[1])
-            
-            self.command = NotifyAboutResultsCommand(self.message_manager)
-            self.command.execute({params, score})
+            self.command.execute(results={params, score})
 
     def stop_node(self):
         self.is_running = False
-        
-        self.command = ExitNetworkCommand(self.message_manager)
         self.command.execute()
-        
-        self.messaging_thread.join()
-        self.computation_thread.join()
-    
+            
     def get_possible_model_types(self) -> list[str]:
         return self.possible_models_and_params.keys()
 
