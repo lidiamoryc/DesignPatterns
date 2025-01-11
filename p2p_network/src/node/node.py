@@ -64,6 +64,8 @@ class Node(NodeInterface):
         self.params_validator = ParamsValidator(self.possible_models_and_params)
         self.message_manager = MessageManager(socket_port, other_peer_port)
 
+        self.is_running = False
+
         try:
             #self.params_validator.validate_model_type(model_type)
             #self.params_validator.validate_params(initial_params)
@@ -74,8 +76,15 @@ class Node(NodeInterface):
             raise WrongUserInputError(str(e)) from e
 
     def run_node(self):
-        threading.Thread(target=self.message_manager.initialize).start()
+        self.is_running = True
 
+        self.messaging_thread = threading.Thread(target=self.message_manager.initialize)
+        self.messaging_thread.start()
+
+        self.computation_thread = threading.Thread(target=self.run_computation)
+        self.computation_thread.start()
+
+    def run_computation(self):
         user_input = UserInput(
         model_name="RandomForest",
         hyperparameters={
@@ -86,17 +95,20 @@ class Node(NodeInterface):
         num_trials=5,
     )
         random_strategy = RandomGridSearch()
-        
-        while(True):
+
+        while self.is_running:
             hyperparams = random_strategy.grid_search(user_input).grid_search_output
             params, score = max(hyperparams.items(), key=lambda x: x[1])
             self.message_manager.publish_message(f"Node found best hyperparameters: {params} with score: {score}")
-            time.sleep(10)
-        
+            time.sleep(2)
 
     def stop_node(self):
-        pass
+        self.is_running = False
+        self.message_manager.cleanup_and_exit()
 
+        self.messaging_thread.join()
+        self.computation_thread.join()
+    
     def get_possible_model_types(self) -> list[str]:
         return self.possible_models_and_params.keys()
 

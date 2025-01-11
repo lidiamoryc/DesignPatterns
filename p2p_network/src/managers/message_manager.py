@@ -29,10 +29,16 @@ class MessageManager:
         self.connect_to_other_peer()
 
         while self.is_running:
-            client, _ = self.messaging_socket.accept()
-            threading.Thread(target=self.handle_client, args=(client,)).start()
+            try:
+                client, _ = self.messaging_socket.accept()
+                threading.Thread(target=self.handle_client, args=(client,)).start()
+            except socket.error:
+                break
 
     def cleanup_and_exit(self):
+        self.is_running = False
+        self.messaging_socket.close()
+
         for peer in self.peers:
             removed_peer = (LOCALHOST, self.socket_port)
 
@@ -43,9 +49,6 @@ class MessageManager:
             except ConnectionRefusedError:
                 print(f"Failed to notify peer {peer} about the removal of {removed_peer}.")
         
-        self.messaging_socket.close()
-        self.is_running = False
-
     def handle_client(self, connection: socket.socket):
         with connection:
             data = connection.recv(1024)
@@ -62,7 +65,6 @@ class MessageManager:
                         self.peers.append(new_peer)
                 elif "peer_removal" in message:
                         removed_peer = tuple(message["peer_removal"])
-                        print(removed_peer)
                         if removed_peer in self.peers:
                             self.peers.remove(removed_peer)
                             print(f"Peer {removed_peer} has been removed.")
