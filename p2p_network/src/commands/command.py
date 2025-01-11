@@ -2,5 +2,5 @@ from abc import ABC, abstractmethod
 
 class Command(ABC):
     @abstractmethod
-    def execute(self):
+    def execute(self, **kwargs):
         pass
