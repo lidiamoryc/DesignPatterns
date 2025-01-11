@@ -1,10 +1,12 @@
 import json
 import threading
-import time
+from p2p_network.src.commands.exit_network import ExitNetworkCommand
+from p2p_network.src.commands.notify_about_results import NotifyAboutResultsCommand
+from p2p_network.src.commands.join_network import JoinNetworkCommand
+from p2p_network.src.managers.message_manager import LOCALHOST, MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
-from p2p_network.src.network_node import NetworkNode
 from p2p_network.src.strategies.base_strategy import UserInput
 from p2p_network.src.strategies.random_strategy import RandomGridSearch
 
@@ -53,16 +55,21 @@ class Node(NodeInterface):
 
         params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
-    def __init__(self, model_type: str, initial_params: list[dict], port: int, other_peer_port: int or None = None):
+    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int, other_peer_port: int = None):
         with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
             self.possible_models_and_params: dict = json.load(f)
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
             self.possible_heuristics: dict = json.load(f)
+        
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
-        self.port: int = port
-        self.other_peer_port: int or None = other_peer_port
+
         self.params_validator = ParamsValidator(self.possible_models_and_params)
+        self.message_manager = MessageManager(socket_port)
+        self.other_peer_port = other_peer_port
+
+        self.is_running = False
+
         try:
             #self.params_validator.validate_model_type(model_type)
             #self.params_validator.validate_params(initial_params)
@@ -72,12 +79,28 @@ class Node(NodeInterface):
         except WrongParamError as e:
             raise WrongUserInputError(str(e)) from e
 
-
-
     def run_node(self):
-        network_node = NetworkNode(self.port, self.other_peer_port)
-        threading.Thread(target=network_node.start_server).start()
+        self.is_running = True
 
+        self.messaging_thread = threading.Thread(target=self.join_network)
+        self.messaging_thread.start()
+
+        self.computation_thread = threading.Thread(target=self.run_computation)
+        self.computation_thread.start()
+
+    def join_network(self):
+        if self.other_peer_port:
+            other_peer = (LOCALHOST, self.other_peer_port)
+            
+            try:
+                self.command = JoinNetworkCommand(self.message_manager)
+                self.command.execute(other_peer)
+            except ConnectionRefusedError:
+                print(f"Unable to join network")
+
+        self.message_manager.initialize()
+    
+    def run_computation(self):
         user_input = UserInput(
         model_name="RandomForest",
         hyperparameters={
@@ -88,17 +111,23 @@ class Node(NodeInterface):
         num_trials=5,
     )
         random_strategy = RandomGridSearch()
-        
-        while(True):
+
+        while self.is_running:
             hyperparams = random_strategy.grid_search(user_input).grid_search_output
             params, score = max(hyperparams.items(), key=lambda x: x[1])
-            network_node.send_message(f"Node at port {self.port} found best hyperparameters: {params} with score: {score}")
-            time.sleep(10)
-        
+            
+            self.command = NotifyAboutResultsCommand(self.message_manager)
+            self.command.execute({params, score})
 
     def stop_node(self):
-        pass
-
+        self.is_running = False
+        
+        self.command = ExitNetworkCommand(self.message_manager)
+        self.command.execute()
+        
+        self.messaging_thread.join()
+        self.computation_thread.join()
+    
     def get_possible_model_types(self) -> list[str]:
         return self.possible_models_and_params.keys()
 

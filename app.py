@@ -1,6 +1,6 @@
 import argparse
+import sys
 from p2p_network.src.user_interface.user_interface_implementation import UserInterface
-
 
 
 def main():
@@ -11,6 +11,12 @@ def main():
     node = UserInterface("model_type", [{"name": "param1", "type": "int", "value": 5}], args.port, args.other)
     node.start_training()
 
+    while True:
+        user_input = input("Press 'q' to terminate: ").strip().lower()
+        if user_input == 'q':
+            print("Termination key 'q' pressed.")
+            node.stop_training()
+            sys.exit(0)
 
 if __name__ == '__main__':
     main()
