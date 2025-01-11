@@ -7,8 +7,10 @@ from p2p_network.src.managers.message_manager import LOCALHOST, MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
-from p2p_network.src.strategies.base_strategy import UserInput
+from p2p_network.src.strategies.base_strategy import UserInput, BaseStrategy
 from p2p_network.src.strategies.random_strategy import RandomGridSearch
+from p2p_network.src.strategies.strategy_mapper import StrategyMapper
+from p2p_network.src.strategies.context import Context
 
 
 class WrongUserInputError(Exception):
@@ -55,7 +57,7 @@ class Node(NodeInterface):
 
         params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
-    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int, other_peer_port: int = None):
+    def __init__(self, model_type: str, initial_params: list[dict], strategy: str, socket_port: int, other_peer_port: int = None):
         with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
             self.possible_models_and_params: dict = json.load(f)
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
@@ -63,11 +65,11 @@ class Node(NodeInterface):
         
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
-
+        self.strategy: BaseStrategy = StrategyMapper.map(strategy)
         self.params_validator = ParamsValidator(self.possible_models_and_params)
         self.message_manager = MessageManager(socket_port)
         self.other_peer_port = other_peer_port
-
+        self.context = Context(self.strategy)
         self.is_running = False
 
         try:
@@ -101,19 +103,9 @@ class Node(NodeInterface):
         self.message_manager.initialize()
     
     def run_computation(self):
-        user_input = UserInput(
-        model_name="RandomForest",
-        hyperparameters={
-            "n_estimators": [10, 50, 100],
-            "max_depth": [None, 10, 20],
-            "min_samples_split": [2, 5, 10],
-        },
-        num_trials=5,
-    )
-        random_strategy = RandomGridSearch()
 
         while self.is_running:
-            hyperparams = random_strategy.grid_search(user_input).grid_search_output
+            hyperparams, score = self.context.executeStrategy(self.initial_params)
             params, score = max(hyperparams.items(), key=lambda x: x[1])
             
             self.command = NotifyAboutResultsCommand(self.message_manager)

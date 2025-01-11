@@ -35,15 +35,10 @@ class Context:
 
         self._strategy = strategy
 
-    def do_some_business_logic(self) -> None:
+    def executeStrategy(self, params) -> None:
         """
         The Context delegates some work to the Strategy object instead of
         implementing multiple versions of the algorithm on its own.
         """
 
-        # ...
-
-        print("Context: Sorting data using the strategy (not sure how it'll do it)")
-        # result = self._strategy.grid_search(params)
-
-        # ...
+        return self._strategy.grid_search(params)
