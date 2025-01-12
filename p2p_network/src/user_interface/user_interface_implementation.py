@@ -1,4 +1,5 @@
 import threading
+import sys
 from p2p_network.src.commands.exit_network import ExitNetworkCommand
 from p2p_network.src.commands.join_network import JoinNetworkCommand
 from p2p_network.src.commands.notify_about_results import NotifyAboutResultsCommand
@@ -44,19 +45,28 @@ class UserInterface:
         if join_network_command:
             self.node.set_command(join_network_command)
 
+        if not self.message_manager.check_socket():
+            print("Error: Socket is not open. It may be already in use.")
+            sys.exit(1)
+
     def start_training(self) -> None:
         """
         Starts the node.
         """
-        self.messaging_thread = threading.Thread(target=self.message_manager.initialize)
-        self.messaging_thread.start()
+        try:
+            self.messaging_thread = threading.Thread(target=self.message_manager.initialize)
+            self.messaging_thread.start()
 
-        self.computation_thread = threading.Thread(target=self.node.run_node)
-        self.computation_thread.start()
+            self.computation_thread = threading.Thread(target=self.node.run_node)
+            self.computation_thread.start()
 
-        notify_about_results_command = NotifyAboutResultsCommand(self.message_manager)
-        self.node.set_command(notify_about_results_command)
-        
+            notify_about_results_command = NotifyAboutResultsCommand(self.message_manager)
+            self.node.set_command(notify_about_results_command)
+        except RuntimeError as e:
+            print(f"Error: {e}")
+            self.stop_training()
+            sys.exit(1)
+            
     def stop_training(self) -> None:
         """Stops the node.
         """
@@ -65,4 +75,4 @@ class UserInterface:
         self.node.stop_node()
 
         self.messaging_thread.join()
-        self.computation_thread.join()
+        self.computation_thread.join(timeout=5)

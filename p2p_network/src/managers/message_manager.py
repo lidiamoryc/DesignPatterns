@@ -1,4 +1,5 @@
 import json
+import sys
 import socket
 import threading
 from p2p_network.src.node.node import Node
@@ -23,8 +24,13 @@ class MessageManager:
         self.is_running = False
 
     def initialize(self):
-        self.messaging_socket.bind((LOCALHOST, self.socket_port))
-        self.messaging_socket.listen()
+        try:
+            self.messaging_socket.bind((LOCALHOST, self.socket_port))
+            self.messaging_socket.listen()
+        except OSError as e:
+            if e.errno == 10048:
+                raise RuntimeError(f"Port {self.socket_port} is already in use.") from e
+
 
         self.is_running = True
 
@@ -101,4 +107,16 @@ class MessageManager:
                     client_socket.connect(peer)
                     client_socket.send(payload)
             except ConnectionRefusedError:
-                print(f"Failed to notify peer {peer}.")               
+                print(f"Failed to notify peer {peer}.")
+
+    def check_socket(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((LOCALHOST , self.socket_port))
+        if result == 0:
+            sock.close()
+            return False
+        else:
+            sock.close()  
+            return True
+            
+                     
