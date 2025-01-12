@@ -1,0 +1,73 @@
+{
+    "RandomForest": {
+        "n_estimators": {
+            "type": "int",
+            "limits": {
+                "min": 1,
+                "max": 1000
+            }
+        },
+        "max_depth": {
+            "type": "int",
+            "limits": {
+                "min": 1,
+                "max": 100
+            }
+        },
+        "min_samples_split": {
+            "type": "int",
+            "limits": {
+                "min": 2,
+                "max": 20
+            }
+        }
+    },
+    "SVC": {
+        "C": {
+            "type": "float",
+            "limits": {
+                "min": 0.1,
+                "max": 1000.0
+            }
+        },
+        "degree": {
+            "type": "int",
+            "limits": {
+                "min": 1,
+                "max": 10
+            }
+        }
+    },
+    "LogisticRegression": {
+        "C": {
+            "type": "float",
+            "limits": {
+                "min": 0.01,
+                "max": 100.0
+            }
+        },
+        "max_iter": {
+            "type": "int",
+            "limits": {
+                "min": 10,
+                "max": 1000
+            }
+        }
+    },
+    "DecisionTree": {
+        "max_depth": {
+            "type": "int",
+            "limits": {
+                "min": 1,
+                "max": 100
+            }
+        },
+        "min_samples_split": {
+            "type": "int",
+            "limits": {
+                "min": 2,
+                "max": 20
+            }
+        }
+    }
+}
