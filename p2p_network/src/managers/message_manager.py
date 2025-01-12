@@ -3,6 +3,7 @@ import sys
 import socket
 import threading
 from p2p_network.src.node.node import Node
+from p2p_network.src.logger.logger import Logger
 
 LOCALHOST = '127.0.0.1'
 
@@ -19,6 +20,8 @@ class MessageManager:
         self.messaging_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.other_peer_port = other_peer_port
         self.node = node
+        self.logger_path = "p2p_network/src/logger/log.text"
+        self.logger = Logger(self.logger_path)
         
 
         self.is_running = False
@@ -57,19 +60,19 @@ class MessageManager:
                 payload = {"peers": self.peers, "records": self.node.get_current_records()}
                 encoded_payload = json.dumps(payload).encode()
                 connection.send(encoded_payload)
-                self.node.log_message("Received request to discover peers.")
+                self.logger.log(self.node.node_id, "Received request to discover peers.")
             elif "register_peer" in decoded_data:
                 new_peer = tuple(decoded_data["register_peer"])
                 if new_peer in self.peers or new_peer == self.get_current_node():
                     return
                 self.peers.append(new_peer)
-                self.node.log_message(f"Registered new peer {new_peer}.")    
+                self.logger.log(self.node.node_id, f"Registered new peer {new_peer}.")
             elif "remove_peer" in decoded_data:
                 removed_peer = tuple(decoded_data["remove_peer"])
                 if removed_peer not in self.peers:
                     return
                 self.peers.remove(removed_peer)
-                self.node.log_message(f"Removed peer {removed_peer}")    
+                self.logger.log(self.node.node_id, f"Removed peer {removed_peer}")  
             
     def get_current_node(self) -> tuple[str, int]:
         return (LOCALHOST, self.socket_port)
@@ -118,5 +121,6 @@ class MessageManager:
         else:
             sock.close()  
             return True
-            
+    
+    
                      
