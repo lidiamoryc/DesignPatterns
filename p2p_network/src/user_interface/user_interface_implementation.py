@@ -49,6 +49,10 @@ class UserInterface:
             print("Error: Socket is not open. It may be already in use.")
             sys.exit(1)
 
+        if not self.message_manager.check_other_socket():
+            print("Error: Other peer port is open. It may not be already in use.")
+            sys.exit(1)
+
     def start_training(self) -> None:
         """
         Starts the node.

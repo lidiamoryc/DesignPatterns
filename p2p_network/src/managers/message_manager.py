@@ -122,5 +122,14 @@ class MessageManager:
             sock.close()  
             return True
     
+    def check_other_socket(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = sock.connect_ex((LOCALHOST , self.other_peer_port))
+        if result != 0:
+            sock.close()
+            return False
+        else:
+            sock.close()  
+            return True
     
                      
