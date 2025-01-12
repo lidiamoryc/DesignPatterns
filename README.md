@@ -41,27 +41,10 @@ Make sure you have **Python `3.10.3`** installed. Then, follow these steps:
 
 ### **Starting the P2P Grid Search**
 
-1. **Run the scheduler** (optional for advanced setups):
-   ```bash
-   dask-scheduler
-   ```
-
-2. **Run the peers**:
-   ```bash
-   python peer.py --host <IP> --port <PORT>
-   ```
-
 3. **Execute the grid search**:
    ```bash
-   python run_grid_search.py
+   python app.py
    ```
-
-### **Example Output**:
-```bash
-Params: {'sugar': 150, 'baking_time': 15}, Taste Score: 9.5
-Best Hyperparameters: {'sugar': 150, 'baking_time': 15}
-```
-
 
 ## **Why Peer-to-Peer?** 🌐
 
