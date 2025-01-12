@@ -43,7 +43,7 @@ class MessageManager:
         
     def handle_client(self, connection: socket.socket):
         with connection:
-            data = connection.recv(1024)
+            data = connection.recv(65536)
 
             if not data:
                 return
@@ -54,7 +54,7 @@ class MessageManager:
                 results = decoded_data["results"]
                 self.node.new_results(results) 
             if "request" in decoded_data and decoded_data["request"] == "peers":
-                payload = {"peers": self.peers}
+                payload = {"peers": self.peers, "records": self.node.get_current_records()}
                 encoded_payload = json.dumps(payload).encode()
                 connection.send(encoded_payload)
                 self.node.log_message("Received request to discover peers.")
@@ -86,6 +86,7 @@ class MessageManager:
                 
             response = json.loads(client_socket.recv(1024).decode())
             self.peers = [tuple(peer) for peer in response["peers"]] + [other_peer]
+            self.node.store_computed_records(response["records"])
         
         payload = {"register_peer": self.get_current_node()}
         encoded_payload = json.dumps(payload).encode()
