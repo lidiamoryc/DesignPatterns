@@ -119,8 +119,8 @@ class Node(NodeInterface):
         if results == "{}":
             return
         results = results[2:-2]
-        results = json.loads(results)
         self.database.add_to_db(results)
+        results = json.loads(results)
         self.log_message(f"Received new results: {results}")
         self.remove_from_grid(results)
     

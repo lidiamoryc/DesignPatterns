@@ -10,7 +10,7 @@ def main():
     parser.add_argument('--other', type=int, required=False, help="Other argument")
     args = parser.parse_args()
     node = UserInterface("RandomForest", {
-            "n_estimators": list(np.arange(-5, 15, 1, dtype=int)),
+            "n_estimators": list(np.arange(10, 15, 1, dtype=int)),
             "max_depth": list(np.arange(10, 50, 1, dtype=int)),
             "min_samples_split": list(np.arange(2, 5, 1, dtype=int)),
         }, "random", args.port, args.other)
