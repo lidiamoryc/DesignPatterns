@@ -17,7 +17,7 @@ class UserInterface:
     A class that implements the UserInterfaceInterface. This class is responsible for 
     starting, stopping of the node and giving user the possible models and parameters.
     """
-    def __init__(self, model_type: str, initial_params: list[dict], socket_port: int = 5001, other_peer_port: int = None):
+    def __init__(self, model_type: str, initial_params: list[dict], strategy: str,  socket_port: int = 5001, other_peer_port: int = None):
         """Initializes the UserInterfaceImplementation.
 
         Attributes:
@@ -33,11 +33,11 @@ class UserInterface:
             start_training: starts the node
             stop_training: stops the node
         """
-        self.node: NodeInterface = Node(model_type, initial_params)
+        self.node: NodeInterface = Node(model_type, initial_params, strategy)
         self.is_stopped = False
         self.model_type = model_type
         self.initial_params = initial_params
-        self.message_manager = MessageManager(socket_port, other_peer_port)
+        self.message_manager = MessageManager(self.node, socket_port, other_peer_port)
 
         join_network_command = JoinNetworkCommand(self.message_manager) if other_peer_port is not None else None
         

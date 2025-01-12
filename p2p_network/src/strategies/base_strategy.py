@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from itertools import product
 from typing import Any
 import json
+import numpy as np
 
 import structlog
 from tqdm import tqdm
@@ -30,21 +31,28 @@ MODEL_MAP = {
 }
 
 class BaseStrategy(ABC):
+    def __init__(self, user_input: UserInput):
+        self.user_input = user_input
+        self.grid = self.get_grid(user_input)
+        
+
     def grid_search(self,
-                    user_input: UserInput) -> tuple[str, Any]:  # TODO: What is the prefered output? Score? Best model weights?
+                    ) -> tuple[str, Any]:  # TODO: What is the prefered output? Score? Best model weights?
 
         iris = load_iris() # TODO: which dataset?
         X_train, X_test, y_train, y_test = train_test_split(
             iris.data, iris.target, test_size=0.2, random_state=42)
 
         # TODO: how many different models? When to switch them?
-        model_class = MODEL_MAP.get(user_input.model_name)
+        model_class = MODEL_MAP.get(self.user_input.model_name)
         if model_class is None:
-            raise ValueError(f"Unsupported model: {user_input.model_name}")
+            raise ValueError(f"Unsupported model: {self.user_input.model_name}")
 
-        grid = self.get_grid(user_input)
 
-        hyperparams = self._get_params_using_heuristic(grid)
+        hyperparams = self._get_params_using_heuristic(self.grid)
+
+        if hyperparams is None:
+            return None
 
         # Filter valid hyperparameters
         # valid_params = {k: v for k, v in hyperparams.items() if k in model().get_params()}
@@ -60,12 +68,16 @@ class BaseStrategy(ABC):
         scores = cross_val_score(model, X_train, y_train, cv=5)
         score = scores.mean()
         # score = accuracy_score(y_test, predictions)
-
+        for keys in hyperparams.keys():
+            if isinstance(hyperparams[keys], np.int64):
+                hyperparams[keys] = int(hyperparams[keys])
+            elif isinstance(hyperparams[keys], np.float64):
+                hyperparams[keys] = float(hyperparams[keys])
+        hyperparams["score"] = score
         #logger.info("Trial complete!", model=str(model), score=score, hyperparams=hyperparams)
-
         hyperparams_string = json.dumps(hyperparams)
 
-        return hyperparams_string, score
+        return hyperparams_string
 
     def get_grid(self, user_input: UserInput) -> Grid:
         """

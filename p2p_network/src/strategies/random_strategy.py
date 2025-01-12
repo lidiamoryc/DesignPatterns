@@ -6,8 +6,13 @@ class RandomGridSearch(BaseStrategy):
 
     def _get_params_using_heuristic(self, grid: Grid) -> dict[str, Any]:
 
+        if len(grid.grid_data) == 0:
+            return None
         hyperparameters = random.choice(grid.grid_data)
-        grid.grid_data.remove(hyperparameters)
+        try:
+            grid.grid_data.remove(hyperparameters)
+        except ValueError:
+            pass
         return hyperparameters
 
 
