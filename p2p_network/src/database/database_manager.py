@@ -1,7 +1,17 @@
 import json
 
+class SingletonMeta(type):
 
-class DatabaseManager():
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class DatabaseManager(metaclass=SingletonMeta):
     def __init__(self, db_path, model_type):
         self.db_path = db_path
         self.model_type = model_type
