@@ -59,7 +59,11 @@ class MessageManager:
             if "request" in decoded_data and decoded_data["request"] == "peers":
                 payload = {"peers": self.peers, "records": self.node.get_current_records()}
                 encoded_payload = json.dumps(payload).encode()
-                connection.send(encoded_payload)
+                    
+                json_length = len(encoded_payload)
+                connection.sendall(json_length.to_bytes(4, 'big'))
+                connection.sendall(encoded_payload)
+
                 self.logger.log(self.node.node_id, "Received request to discover peers.")
             elif "register_peer" in decoded_data:
                 new_peer = tuple(decoded_data["register_peer"])
@@ -86,8 +90,22 @@ class MessageManager:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.connect(other_peer)
             client_socket.send(encoded_payload)
+
+            json_length_bytes = client_socket.recv(4)
+            if not json_length_bytes:
+                return None
+            
+            json_length = int.from_bytes(json_length_bytes, 'big')
+            
+            json_bytes = bytearray()
+            while len(json_bytes) < json_length:
+                chunk = client_socket.recv(min(4096, json_length - len(json_bytes)))
+                if not chunk:
+                    raise ConnectionError("Connection lost while receiving data.")
                 
-            response = json.loads(client_socket.recv(1024).decode())
+                json_bytes.extend(chunk)
+            
+            response = json.loads(json_bytes.decode())
             self.peers = [tuple(peer) for peer in response["peers"]] + [other_peer]
             self.node.store_computed_records(response["records"])
         
