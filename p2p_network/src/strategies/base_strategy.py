@@ -31,21 +31,28 @@ MODEL_MAP = {
 }
 
 class BaseStrategy(ABC):
+    def __init__(self, user_input: UserInput):
+        self.user_input = user_input
+        self.grid = self.get_grid(user_input)
+        
+
     def grid_search(self,
-                    user_input: UserInput) -> tuple[str, Any]:  # TODO: What is the prefered output? Score? Best model weights?
+                    ) -> tuple[str, Any]:  # TODO: What is the prefered output? Score? Best model weights?
 
         iris = load_iris() # TODO: which dataset?
         X_train, X_test, y_train, y_test = train_test_split(
             iris.data, iris.target, test_size=0.2, random_state=42)
 
         # TODO: how many different models? When to switch them?
-        model_class = MODEL_MAP.get(user_input.model_name)
+        model_class = MODEL_MAP.get(self.user_input.model_name)
         if model_class is None:
-            raise ValueError(f"Unsupported model: {user_input.model_name}")
+            raise ValueError(f"Unsupported model: {self.user_input.model_name}")
 
-        grid = self.get_grid(user_input)
 
-        hyperparams = self._get_params_using_heuristic(grid)
+        hyperparams = self._get_params_using_heuristic(self.grid)
+
+        if hyperparams is None:
+            return None
 
         # Filter valid hyperparameters
         # valid_params = {k: v for k, v in hyperparams.items() if k in model().get_params()}

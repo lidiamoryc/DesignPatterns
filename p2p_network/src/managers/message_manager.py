@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+from p2p_network.src.node.node import Node
 
 LOCALHOST = '127.0.0.1'
 
@@ -10,12 +11,14 @@ class MessageManager:
     messaging_socket: socket.socket
     is_running: bool
 
-    def __init__(self, socket_port: int, other_peer_port: int = None):
+    def __init__(self, node: Node, socket_port: int, other_peer_port: int = None ):
         self.peers = []
 
         self.socket_port = socket_port
         self.messaging_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.other_peer_port = other_peer_port
+        self.node = node
+        
 
         self.is_running = False
 
@@ -28,7 +31,7 @@ class MessageManager:
         while self.is_running:
             try:
                 client, _ = self.messaging_socket.accept()
-                threading.Thread(target=self.handle_client, args=(client,)).start()
+                threading.Thread(target=self.handle_client, args=(client, )).start()
             except socket.error:
                 break
         
@@ -40,14 +43,17 @@ class MessageManager:
                 return
             
             decoded_data = json.loads(data.decode())
-            print("Received data:", decoded_data)
-                 
+
+            if "results" in decoded_data:
+                results = decoded_data["results"]
+                self.node.new_results(results)   
             if "request" in decoded_data and decoded_data["request"] == "peers":
                 payload = {"peers": self.peers}
                 encoded_payload = json.dumps(payload).encode()
                 connection.send(encoded_payload)
             elif "register_peer" in decoded_data:
                 new_peer = tuple(decoded_data["register_peer"])
+
                 if new_peer in self.peers or new_peer == self.get_current_node():
                     return
                 self.peers.append(new_peer)    

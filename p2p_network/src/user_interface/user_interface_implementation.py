@@ -37,7 +37,7 @@ class UserInterface:
         self.is_stopped = False
         self.model_type = model_type
         self.initial_params = initial_params
-        self.message_manager = MessageManager(socket_port, other_peer_port)
+        self.message_manager = MessageManager(self.node, socket_port, other_peer_port)
 
         join_network_command = JoinNetworkCommand(self.message_manager) if other_peer_port is not None else None
         

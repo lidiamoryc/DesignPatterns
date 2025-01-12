@@ -64,9 +64,10 @@ class Node(NodeInterface):
         
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
-        self.strategy: BaseStrategy = StrategyMapper.map(strategy)
         self.params_validator = ParamsValidator(self.possible_models_and_params)
-        self.context = Context(self.strategy())
+        self.userInput = UserInput(model_name=self.model_type, hyperparameters=self.initial_params)
+        self.strategy: BaseStrategy = StrategyMapper.map(strategy)(self.userInput)
+        self.context = Context(self.strategy)
         self.is_running = False
         self.command = None
         self.database_path = "p2p_network/src/database/database.json"
@@ -93,17 +94,40 @@ class Node(NodeInterface):
         self.run_computation()
     
     def run_computation(self):
-        userInput = UserInput(model_name=self.model_type, hyperparameters=self.initial_params)
         while self.is_running:
             time.sleep(5)
-            params = self.context.executeStrategy(userInput)
+            params = self.context.executeStrategy()
+            if params is None:
+                self.stop_node()
+                break
             self.database.add_to_db(params)
-            
             self.command.execute(results={params})
 
     def stop_node(self):
+        print("All combinations trained. You can stop the node by pressing 'q'.")
         self.is_running = False
         self.command.execute()
+    
+    def new_results(self, results: dict):
+        if results == "{}":
+            return
+        results = results[2:-2]
+        results = json.loads(results)
+        self.database.add_to_db(results)
+        for grid in self.strategy.grid.grid_data:
+            all_match = True
+            for key in grid.keys():
+                if grid[key] !=results[key]:
+                    all_match = False
+            if all_match:
+                self.strategy.grid.grid_data.remove(grid)
+                break
+
+        
+            
+            
+
+        
             
     def get_possible_model_types(self) -> list[str]:
         return self.possible_models_and_params.keys()

@@ -35,9 +35,9 @@ class Context:
 
         self._strategy = strategy
 
-    def executeStrategy(self, params) -> None:
+    def executeStrategy(self) -> None:
         """
         The Context delegates some work to the Strategy object instead of
         implementing multiple versions of the algorithm on its own.
         """
-        return self._strategy.grid_search(params)
+        return self._strategy.grid_search()
