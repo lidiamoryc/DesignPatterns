@@ -59,15 +59,10 @@ class Node(NodeInterface):
         params_validator (ParamsValidator): an instance of the ParamsValidator class
     """
     def __init__(self, model_type: str, initial_params: list[dict], strategy: str):
-        with open("p2p_network/available_models_and_params.json", encoding="utf-8") as f:
-            self.possible_models_and_params: dict = json.load(f)
-        with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
-            self.possible_heuristics: dict = json.load(f)
         
         self.node_id = uuid.uuid4()
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
-        self.params_validator = ParamsValidator(self.possible_models_and_params)
         self.userInput = UserInput(model_name=self.model_type, hyperparameters=self.initial_params)
         self.strategy: BaseStrategy = StrategyMapper.map(strategy)(self.userInput)
         self.context = Context(self.strategy)
@@ -87,6 +82,7 @@ class Node(NodeInterface):
         self.logger.log(self.node_id, message)
 
     def get_current_records(self):
+        print(self.database.read_db())
         return self.database.read_db()
     
     def store_computed_records(self, records: list[dict]):
@@ -103,17 +99,16 @@ class Node(NodeInterface):
     
     def run_computation(self):
         while self.is_running:
-            time.sleep(5)
+            time.sleep(1)
             params = self.context.executeStrategy()
             if params is None:
+                print("No more params to compute. Press q to stop the node.")
                 self.stop_node()
                 break
             self.database.add_to_db(params)
             self.log_message(f"Computed new params: {params}")
             self.command.execute(results={params})
             self.log_message(f"Executed: {self.command}")
-            print(self.database.db["model_type"])
-            print(self.database.db["combinations"][0])
 
     def stop_node(self):
         self.is_running = False
