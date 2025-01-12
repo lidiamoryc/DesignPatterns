@@ -64,6 +64,7 @@ class Node(NodeInterface):
         with open("p2p_network/available_heuristics.json", encoding="utf-8") as f:
             self.possible_heuristics: dict = json.load(f)
         
+        self.node_id = uuid.uuid4()
         self.model_type: str = model_type
         self.initial_params: dict = initial_params
         self.params_validator = ParamsValidator(self.possible_models_and_params)
@@ -72,10 +73,9 @@ class Node(NodeInterface):
         self.context = Context(self.strategy)
         self.is_running = False
         self.command = None
-        self.database_path = "p2p_network/src/database/database.json"
+        self.database_path = f"p2p_network/src/database/database{self.node_id}.json"
         self.logger_path = "p2p_network/src/logger/log.text"
 
-        self.node_id = uuid.uuid4()
         self.logger = Logger(self.logger_path)
         self.database = DatabaseManager(self.database_path, self.model_type)
 
@@ -94,12 +94,18 @@ class Node(NodeInterface):
     def log_message(self, message: str):
         self.logger.log(self.node_id, message)
 
+    def get_current_records(self):
+        return self.database.read_db()
+    
+    def store_computed_records(self, records: list[dict]):
+        self.database.override_db_with_custom_data(records)
+
     def run_node(self):
         self.is_running = True
 
         if self.command:
             self.command.execute()
-            self.log_message(f"Executed: {self.command}")
+            self.log_message(f"Joined network")
 
         self.run_computation()
     
