@@ -74,19 +74,10 @@ class Node(NodeInterface):
         self.command = None
         self.database_path = "p2p_network/src/database/database.json"
         self.logger_path = "p2p_network/src/logger/log.text"
-
         self.node_id = uuid.uuid4()
         self.logger = Logger(self.logger_path)
         self.database = DatabaseManager(self.database_path, self.model_type)
 
-        try:
-            #self.params_validator.validate_model_type(model_type)
-            #self.params_validator.validate_params(initial_params)
-            pass
-        except WrongModelTypeError as e:
-            raise WrongUserInputError(str(e)) from e
-        except WrongParamError as e:
-            raise WrongUserInputError(str(e)) from e
         
     def set_command(self, command: Command):
         self.command = command
@@ -114,6 +105,8 @@ class Node(NodeInterface):
             self.log_message(f"Computed new params: {params}")
             self.command.execute(results={params})
             self.log_message(f"Executed: {self.command}")
+            print(self.database.db["model_type"])
+            print(self.database.db["combinations"][0])
 
     def stop_node(self):
         self.is_running = False
