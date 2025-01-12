@@ -7,4 +7,4 @@ class JoinNetworkCommand(Command):
         self.message_manager = message_manager
 
     def execute(self, **kwargs):
-        self.message_manager.join_network()
+        return self.message_manager.join_network()
