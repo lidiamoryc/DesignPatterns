@@ -1,6 +1,8 @@
 import json
 import time
+import uuid
 from p2p_network.src.commands.command import Command
+from p2p_network.src.logger.logger import Logger
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.validation.params_validator import ParamsValidator
 from p2p_network.src.validation.params_validator import WrongParamError, WrongModelTypeError
@@ -71,6 +73,10 @@ class Node(NodeInterface):
         self.is_running = False
         self.command = None
         self.database_path = "p2p_network/src/database/database.json"
+        self.logger_path = "p2p_network/src/logger/log.text"
+
+        self.node_id = uuid.uuid4()
+        self.logger = Logger(self.logger_path)
         self.database = DatabaseManager(self.database_path, self.model_type)
 
         try:
@@ -85,11 +91,15 @@ class Node(NodeInterface):
     def set_command(self, command: Command):
         self.command = command
 
+    def log_message(self, message: str):
+        self.logger.log(self.node_id, message)
+
     def run_node(self):
         self.is_running = True
 
         if self.command:
             self.command.execute()
+            self.log_message(f"Executed: {self.command}")
 
         self.run_computation()
     
@@ -101,10 +111,11 @@ class Node(NodeInterface):
                 self.stop_node()
                 break
             self.database.add_to_db(params)
+            self.log_message(f"Computed new params: {params}")
             self.command.execute(results={params})
+            self.log_message(f"Executed: {self.command}")
 
     def stop_node(self):
-        print("All combinations trained. You can stop the node by pressing 'q'.")
         self.is_running = False
         self.command.execute()
     
@@ -114,6 +125,7 @@ class Node(NodeInterface):
         results = results[2:-2]
         results = json.loads(results)
         self.database.add_to_db(results)
+        self.log_message(f"Received new results: {results}")
         for grid in self.strategy.grid.grid_data:
             all_match = True
             for key in grid.keys():

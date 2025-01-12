@@ -46,22 +46,24 @@ class MessageManager:
 
             if "results" in decoded_data:
                 results = decoded_data["results"]
-                self.node.new_results(results)   
+                self.node.new_results(results) 
             if "request" in decoded_data and decoded_data["request"] == "peers":
                 payload = {"peers": self.peers}
                 encoded_payload = json.dumps(payload).encode()
                 connection.send(encoded_payload)
+                self.node.log_message("Received request to discover peers.")
             elif "register_peer" in decoded_data:
                 new_peer = tuple(decoded_data["register_peer"])
-
                 if new_peer in self.peers or new_peer == self.get_current_node():
                     return
-                self.peers.append(new_peer)    
+                self.peers.append(new_peer)
+                self.node.log_message(f"Registered new peer {new_peer}.")    
             elif "remove_peer" in decoded_data:
                 removed_peer = tuple(decoded_data["remove_peer"])
                 if removed_peer not in self.peers:
                     return
                 self.peers.remove(removed_peer)
+                self.node.log_message(f"Removed peer {removed_peer}")    
             
     def get_current_node(self) -> tuple[str, int]:
         return (LOCALHOST, self.socket_port)
