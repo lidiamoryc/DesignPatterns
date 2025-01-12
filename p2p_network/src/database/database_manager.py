@@ -20,7 +20,7 @@ class DatabaseManager(metaclass=SingletonMeta):
 
     def override_db_with_custom_data(self, custom_data):
         self.db = custom_data
-        self.write_db
+        self.write_db()
 
     def read_db(self):
         with open(self.db_path, 'r', encoding='utf-8') as f:

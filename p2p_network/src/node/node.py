@@ -82,11 +82,13 @@ class Node(NodeInterface):
         self.logger.log(self.node_id, message)
 
     def get_current_records(self):
-        print(self.database.read_db())
         return self.database.read_db()
     
     def store_computed_records(self, records: list[dict]):
         self.database.override_db_with_custom_data(records)
+        for record in records["combinations"]:
+            results = json.loads(record)
+            self.remove_from_grid(results)
 
     def run_node(self):
         self.is_running = True
@@ -99,7 +101,6 @@ class Node(NodeInterface):
     
     def run_computation(self):
         while self.is_running:
-            time.sleep(1)
             params = self.context.executeStrategy()
             if params is None:
                 print("No more params to compute. Press q to stop the node.")
@@ -121,10 +122,13 @@ class Node(NodeInterface):
         results = json.loads(results)
         self.database.add_to_db(results)
         self.log_message(f"Received new results: {results}")
+        self.remove_from_grid(results)
+    
+    def remove_from_grid(self, results: dict):
         for grid in self.strategy.grid.grid_data:
             all_match = True
             for key in grid.keys():
-                if grid[key] !=results[key]:
+                if grid[key] != results[key]:
                     all_match = False
             if all_match:
                 self.strategy.grid.grid_data.remove(grid)
@@ -134,13 +138,3 @@ class Node(NodeInterface):
             
             
 
-        
-            
-    def get_possible_model_types(self) -> list[str]:
-        return self.possible_models_and_params.keys()
-
-    def get_possible_params(self, model_type: str) -> list[dict]:
-        return self.possible_models_and_params[model_type]
-
-    def get_possible_heuristics(self) -> dict:
-        return self.possible_heuristics

@@ -1,5 +1,4 @@
 import json
-import sys
 import socket
 import threading
 from p2p_network.src.node.node import Node
