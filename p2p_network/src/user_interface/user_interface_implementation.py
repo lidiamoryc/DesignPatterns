@@ -34,6 +34,11 @@ class UserInterface:
             start_training: starts the node
             stop_training: stops the node
         """
+
+        if socket_port == other_peer_port:
+            print("Error: Ports cannot be the same.")
+            sys.exit(1)
+
         self.node: NodeInterface = Node(model_type, initial_params, strategy)
         self.is_stopped = False
         self.model_type = model_type
