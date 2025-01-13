@@ -9,5 +9,3 @@ class StrategyMapper:
             return RandomGridSearch
         elif strategy == "bayesian":
             return BayesianGridSearch
-        else:
-            raise Exception("Invalid strategy")

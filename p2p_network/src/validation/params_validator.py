@@ -14,6 +14,14 @@ class WrongModelTypeError(ValueError):
     def __init__(self, model_type: str):
         super().__init__(f"Model type {model_type} is not valid.")
 
+class WrongStrategyError(ValueError):
+    """Raised when the strategy is not valid."""
+
+    def __init__(self, strategy: str):
+        super().__init__(f"Strategy {strategy} is not valid.")
+
+
+
 
 
 class ParamsValidator:
@@ -26,6 +34,8 @@ class ParamsValidator:
     def __init__(self):
         with open("p2p_network/src/validation/possible_models_and_params.json", encoding="utf-8") as f:
             self._possible_models_and_params = json.loads(f.read())
+        with open("p2p_network/src/validation/possible_strategies.json", encoding="utf-8") as f:
+            self._possible_strategies = json.loads(f.read())
 
     def validate_model_type(self, model_type: str) -> bool:
         """Validates the given model type.
@@ -38,6 +48,19 @@ class ParamsValidator:
         """
         if model_type not in self._possible_models_and_params.keys():
             raise WrongModelTypeError(model_type)
+        return True
+    
+    def validate_strategy(self, strategy: str) -> bool:
+        """Validates the given strategy.
+
+        Args:
+            strategy (str): given strategy
+
+        Returns:
+            bool: True if the strategy is valid
+        """
+        if strategy not in self._possible_strategies["strategies"]:
+            raise WrongStrategyError(strategy)
         return True
 
     def validate_params(self, model_type: str, params: list[dict]) -> bool:

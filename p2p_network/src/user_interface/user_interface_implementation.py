@@ -6,7 +6,7 @@ from p2p_network.src.commands.notify_about_results import NotifyAboutResultsComm
 from p2p_network.src.managers.message_manager import MessageManager
 from p2p_network.src.node.node_interface import NodeInterface
 from p2p_network.src.node.node import Node
-from p2p_network.src.validation.params_validator import ParamsValidator, WrongModelTypeError, WrongParamError
+from p2p_network.src.validation.params_validator import ParamsValidator, WrongModelTypeError, WrongParamError, WrongStrategyError
 
 class WrongUserInputError(Exception):
     """Raised when some user input is not valid."""
@@ -39,13 +39,29 @@ class UserInterface:
         if socket_port == other_peer_port:
             print("Error: Ports cannot be the same.")
             sys.exit(1)
+        
+
+        self.validator = ParamsValidator()
+        try:
+            self.validator.validate_model_type(model_type)
+            self.validator.validate_params(model_type, initial_params)
+            self.validator.validate_strategy(strategy)
+        except WrongModelTypeError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        except WrongParamError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        except WrongStrategyError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        
 
         self.node: NodeInterface = Node(model_type, initial_params, strategy)
         self.is_stopped = False
         self.model_type = model_type
         self.initial_params = initial_params
         self.message_manager = MessageManager(self.node, socket_port, other_peer_port)
-        self.validator = ParamsValidator()
         join_network_command = JoinNetworkCommand(self.message_manager) if other_peer_port is not None else None
         
         if join_network_command:
@@ -59,15 +75,7 @@ class UserInterface:
             print("Error: Other peer port is open. It may not be already in use.")
             sys.exit(1)
         
-        try:
-            self.validator.validate_model_type(model_type)
-            self.validator.validate_params(model_type, initial_params)
-        except WrongModelTypeError as e:
-            print(f"Error: {e}")
-            sys.exit(1)
-        except WrongParamError as e:
-            print(f"Error: {e}")
-            sys.exit(1)
+        
 
     def start_training(self) -> None:
         """
