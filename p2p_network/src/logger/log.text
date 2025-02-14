@@ -1,0 +1,15 @@
+[2025-01-14 11:37:06] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Received request to discover peers.
+[2025-01-14 11:37:06] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Joined network
+[2025-01-14 11:37:06] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Registered new peer ('127.0.0.1', 5002).
+[2025-01-14 11:37:08] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Computed new params: {"n_estimators": 2, "max_depth": 2, "min_samples_split": 3, "score": 0.925}
+[2025-01-14 11:37:08] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Executed: <p2p_network.src.commands.notify_about_results.NotifyAboutResultsCommand object at 0x000002119DE63E50>
+[2025-01-14 11:37:08] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Received new results: {'n_estimators': 2, 'max_depth': 2, 'min_samples_split': 3, 'score': 0.925}
+[2025-01-14 11:37:10] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Removed peer ('127.0.0.1', 5001)
+[2025-01-14 11:37:16] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Computed new params: {"n_estimators": 3, "max_depth": 2, "min_samples_split": 3, "score": 0.9583333333333334}
+[2025-01-14 11:37:16] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Executed: <p2p_network.src.commands.notify_about_results.NotifyAboutResultsCommand object at 0x00000253703539A0>
+[2025-01-14 11:37:18] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Computed new params: {"n_estimators": 3, "max_depth": 2, "min_samples_split": 3, "score": 0.9416666666666668}
+[2025-01-14 11:37:18] [f176d0de-59df-4bc8-9b5d-15fe9bf0414d]: Executed: <p2p_network.src.commands.exit_network.ExitNetworkCommand object at 0x000002119DE63760>
+[2025-01-14 11:37:26] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Computed new params: {"n_estimators": 4, "max_depth": 2, "min_samples_split": 3, "score": 0.9}
+[2025-01-14 11:37:26] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Executed: <p2p_network.src.commands.notify_about_results.NotifyAboutResultsCommand object at 0x00000253703539A0>
+[2025-01-14 11:37:36] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Computed new params: None
+[2025-01-14 11:37:36] [7957404c-8e5f-4baf-a9e6-ddd05db95342]: Executed: <p2p_network.src.commands.notify_about_results.NotifyAboutResultsCommand object at 0x00000253703539A0>
