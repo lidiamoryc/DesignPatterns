@@ -48,8 +48,8 @@ Make sure you have **Python `3.10.3`** installed. Then, follow these steps:
 
 4. **Important notes**:
 - The app will inform in the console when the training is finished.
-- You can control possible hyperparams in the app.py file. List of possible models and params is available in file [p2p_network/validation/possible_models_and_params.json](p2p_network/validation/possible_models_and_params.json).
-- The logs of the training are stored in [p2p_network/logger/log.text](p2p_network/logger/log.text). You can also find example logs in this file, on this repository.
+- You can control possible hyperparams in the app.py file. List of possible models and params is available in file [p2p_network/src/validation/possible_models_and_params.json](p2p_network/src/validation/possible_models_and_params.json).
+- The logs of the training are stored in [p2p_network/src/logger/log.text](p2p_network/src/logger/log.text). You can also find example logs in this file, on this repository.
 
 **For more information about the architecture, read [docs.pdf](docs.pdf). Unfortunately, we provide only Polish version of the document for now.**
 
