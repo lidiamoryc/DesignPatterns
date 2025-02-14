@@ -48,10 +48,10 @@ Make sure you have **Python `3.10.3`** installed. Then, follow these steps:
 
 4. **Important notes**:
 - The app will inform in the console when the training is finished.
-- You can control possible hyperparams in the app.py file. List of possible models and params is available in file validation/possible_models_and_params.json.
-- The logs of the training are stored in logger/log.text. You can also find example logs in this file, on this repository.
+- You can control possible hyperparams in the app.py file. List of possible models and params is available in file [validation/possible_models_and_params.json](validation/possible_models_and_params.json).
+- The logs of the training are stored in [logger/log.text](logger/log.text). You can also find example logs in this file, on this repository.
 
-**For more information about the architecture, read docs.pdf file. Unfortunately, we provide only Polish version of the document for now.**
+**For more information about the architecture, read [docs.pdf](docs.pdf). Unfortunately, we provide only Polish version of the document for now.**
 
 
 
